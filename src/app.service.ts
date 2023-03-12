@@ -3,7 +3,7 @@ import { REQUEST } from '@nestjs/core';
 import { HttpHealthIndicator, HealthCheckService } from '@nestjs/terminus';
 import { Request } from 'express';
 
-type Greetings = {
+export type Greetings = {
   message: string;
 };
 
@@ -20,14 +20,13 @@ export class AppService {
 
   constructor(
     @Inject(REQUEST) private readonly request: Request,
-    private http: HttpHealthIndicator,
-    private health: HealthCheckService,
+    private readonly http: HttpHealthIndicator,
+    private readonly health: HealthCheckService,
   ) {
-    this.#greetingsMessage = 'Hello World!';
-    this.#statusMessage = 'Service is running';
     const protocol = this.request.protocol;
     const host = this.request.headers.host;
-
+    this.#greetingsMessage = 'Hello World!';
+    this.#statusMessage = 'Service is running';
     this.#hostname = `${protocol}://${host}`;
   }
 

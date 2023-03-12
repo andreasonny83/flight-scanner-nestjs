@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode } from '@nestjs/common';
 import { HealthCheck } from '@nestjs/terminus';
 
-import { AppService } from './app.service';
+import { AppService, Greetings } from './app.service';
 
 @Controller()
 export class AppController {
@@ -9,7 +9,7 @@ export class AppController {
 
   @Get()
   @HttpCode(200)
-  getHello() {
+  getHello(): Greetings {
     return this.appService.greetings();
   }
 

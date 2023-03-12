@@ -407,7 +407,7 @@ describe('FlightsService', () => {
       expect(res.length).toBeLessThan(Object.values(mockLegs).length);
     });
 
-    it('should return the matching airport with 0 or 1 stop', () => {
+    it('should return the legs matching 0 or max 1 stop', () => {
       const testOriginIds = ['95565052'];
       const testDestinationIds = ['95565062', '95565065'];
 
