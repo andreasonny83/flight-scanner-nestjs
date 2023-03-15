@@ -1,14 +1,26 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 
 import mockData from './__fixtures__/create-itinerary.json';
 import {
+  FilterTimesOptions,
+  FindFlights,
   FlightContent,
+  FlightContentLeg,
   FlightContentLegs,
   FlightContentPlace,
   FlightContentPlaces,
   PlaceTypes,
+  SearchInput,
 } from './types';
+
+interface CreateResponse {
+  sessionToken: string;
+  status: 'RESULT_STATUS_INCOMPLETE' | 'RESULT_STATUS_COMPLETE';
+  action: string;
+  content: FlightContent;
+}
 
 @Injectable()
 export class FlightsService {
@@ -20,43 +32,102 @@ export class FlightsService {
     this.#baseUrl = process.env.SEARCH_FLIGHTS_URL;
   }
 
-  private async create() {
+  private async poll(sessionToken: string) {
+    const pollUrl = `${this.#baseUrl}/flights/live/search/poll/${sessionToken}`;
+    const guid = uuidv4();
+
+    try {
+      console.log('waiting 5 sec...');
+      await new Promise((resolve) => setTimeout(() => resolve(''), 5000));
+      console.log('done');
+
+      const res = await this.httpService.axiosRef.post<CreateResponse>(pollUrl, null, {
+        headers: {
+          'x-api-key': this.#key,
+          'User-Agent': `${guid}`,
+        },
+      });
+
+      if (res.status === 200) {
+        if (res.data.status === 'RESULT_STATUS_INCOMPLETE') {
+          console.log('Result status incomplete. starting over...');
+          return this.poll(sessionToken);
+        }
+        return res.data.content;
+      }
+      throw Error('Bad results');
+    } catch (err) {
+      console.log(err);
+
+      return null;
+    }
+  }
+
+  private async create(
+    originId: string,
+    destId: string,
+    year: number,
+    month: number,
+    day: number,
+    currency: string,
+    market: string,
+    locale: string,
+  ): Promise<FlightContent> {
     const createUrl = `${this.#baseUrl}/flights/live/search/create`;
+    const guid = uuidv4();
+    const adults = 1;
+    const cabinClass:
+      | 'CABIN_CLASS_UNSPECIFIED'
+      | 'CABIN_CLASS_ECONOMY'
+      | 'CABIN_CLASS_PREMIUM_ECONOMY'
+      | 'CABIN_CLASS_BUSINESS'
+      | 'CABIN_CLASS_FIRST' = 'CABIN_CLASS_ECONOMY';
+
     const req = {
       query: {
-        market: 'UK',
-        locale: 'en-GB',
-        currency: 'GBP',
+        market,
+        locale,
+        currency,
         query_legs: [
           {
             origin_place_id: {
-              iata: 'STN',
+              iata: originId,
             },
             destination_place_id: {
-              iata: 'CIA',
+              iata: destId,
             },
-            date: {
-              year: 2023,
-              month: 4,
-              day: 22,
-            },
+            date: { year, month, day },
           },
         ],
-        adults: 1,
-        // cabinClass: 'CABIN_CLASS_ECONOMY',
-        // nearbyAirports: false,
+        adults,
+        cabinClass,
+        nearbyAirports: false,
       },
     };
 
-    const res = await this.httpService.axiosRef.post(createUrl, JSON.stringify(req), {
-      headers: {
-        'x-api-key': this.#key,
-        'Content-type': 'application/json',
-      },
-    });
-    console.log(res.data);
-    const sessionToken = res.data.sessionToken;
-    const content = res.data.content;
+    try {
+      const res = await this.httpService.axiosRef.post<CreateResponse>(
+        createUrl,
+        JSON.stringify(req),
+        {
+          headers: {
+            Accept: '*/*',
+            'x-api-key': this.#key,
+            'Content-type': 'application/json',
+            'User-Agent': `${guid}`,
+          },
+        },
+      );
+
+      if (res.status === 200) {
+        return this.poll(res.data.sessionToken);
+      }
+      throw Error('Bad results');
+    } catch (err) {
+      console.log(err);
+
+      return null;
+    }
   }
 
   findSelectedAirports(targetAirport: string, places: FlightContentPlaces): FlightContentPlace[] {
@@ -91,29 +162,126 @@ export class FlightsService {
       (leg) =>
         originIds.includes(leg.originPlaceId) &&
         destinationIds.includes(leg.destinationPlaceId) &&
-        maxStopCount === leg.stopCount,
+        leg.stopCount <= maxStopCount,
     );
 
     return filteredLegs;
   }
 
-  async findFlights(originIata: string, destinationIata: string) {
-    const res = mockData;
+  filterTimes(legs: FlightContentLeg[], options: FilterTimesOptions) {
+    const {
+      earliestDepartureTime: earlDep,
+      latestDepartureTime: latDep,
+      earliestArrTime: earlArr,
+      latestArrTime: latArr,
+    } = options;
+    const [earlDepHour, earlDepMin] = earlDep?.split('-') || [];
+    const [latDepHour, latDepMin] = latDep?.split('-') || [];
+    const [earlArrHour, earlArrMin] = earlArr?.split('-') || [];
+    const [latArrHour, latArrMin] = latArr?.split('-') || [];
+    const earlDepTime = Number(`${earlDepHour}${earlDepMin}`);
+    const latDepTime = Number(`${latDepHour}${latDepMin}`);
+    const earlArrTime = Number(`${earlArrHour}${earlArrMin}`);
+    const latArrTime = Number(`${latArrHour}${latArrMin}`);
 
-    const sessionToken = res.sessionToken;
-    const content = res.content as FlightContent;
-    const legs = content.results.legs;
-    const places = content.results.places;
+    return legs.filter((leg) => {
+      const depTimeMin = `${leg.arrivalDateTime.minute}`;
+      const depTimeMinFormat = depTimeMin.length < 2 ? `0${depTimeMin}` : depTimeMin;
+      const depTime = Number(`${leg.departureDateTime.hour}${depTimeMinFormat}`);
+      const arrTimeMin = `${leg.arrivalDateTime.minute}`;
+      const arrTimeMinFormat = arrTimeMin.length < 2 ? `0${arrTimeMin}` : arrTimeMin;
+      const arrTime = Number(`${leg.arrivalDateTime.hour}${arrTimeMinFormat}`);
+
+      const earlDepCheck = earlDep ? depTime >= earlDepTime : true;
+      const latDepCheck = latDep ? depTime <= latDepTime : true;
+      const earlArrCheck = earlArr ? arrTime >= earlArrTime : true;
+      const latArrCheck = latArr ? arrTime <= latArrTime : true;
+
+      return earlDepCheck && latDepCheck && earlArrCheck && latArrCheck;
+    });
+  }
+
+  findFlights({
+    flightContent,
+    destinationIata,
+    originIata,
+    earliestDepartureTime: earlDep,
+    latestDepartureTime: latDep,
+    earliestArrivalTime: earlArr,
+    latestArrivalTime: latArr,
+    maxStops,
+    maxTotalPrice,
+    tripLengthDays,
+  }: FindFlights) {
+    const legs = flightContent.results.legs;
+    const places = flightContent.results.places;
 
     const originAirports = this.findSelectedAirports(originIata, places);
     const destinationAirports = this.findSelectedAirports(destinationIata, places);
-    // const filteredLegs = this.filterLegsByAirport(legs, selectedAirports);
+    const originIds = originAirports.map((airport) => airport.entityId);
+    const destinationIds = destinationAirports.map((airport) => airport.entityId);
+
+    const filterLegsByAirports: FlightContentLeg[] = this.filterLegsByAirport(
+      legs,
+      originIds,
+      destinationIds,
+      maxStops,
+    );
+
+    const filterByTimes = this.filterTimes(filterLegsByAirports, {
+      earliestDepartureTime: earlDep,
+      latestDepartureTime: latDep,
+      earliestArrTime: earlArr,
+      latestArrTime: latArr,
+    });
+
+    return filterByTimes;
   }
 
-  async search() {
-    const originIata = 'STN';
-    const destinationIata = 'ROM';
-    await this.findFlights(originIata, destinationIata);
-    return 'ok';
+  extractDate(inputDate: string): number[] {
+    return inputDate.split('-').map((digit) => Number(digit));
+  }
+
+  async search(input: SearchInput) {
+    const { originIata, destinationIata, maxStops, departureDate, returnDate } = input;
+    const [depYear, depMonth, depDay] = this.extractDate(departureDate);
+    const [retYear, retMonth, retDay] = returnDate
+      ? this.extractDate(returnDate)
+      : this.extractDate(departureDate);
+    const currency = 'GBP';
+    const market = 'UK';
+    const locale = 'en-GB';
+
+    const [departureFlightContent, returnFlightContent] = await Promise.all([
+      this.create(originIata, destinationIata, depYear, depMonth, depDay, currency, market, locale),
+      this.create(destinationIata, originIata, retYear, retMonth, retDay, currency, market, locale),
+    ]);
+
+    // const res = mockData;
+    // return JSON.stringify(res, null, 2);
+
+    const departureMatches = this.findFlights({
+      originIata,
+      destinationIata,
+      flightContent: departureFlightContent,
+      tripLengthDays: Number(input.tripLength),
+      maxStops: maxStops && Number(maxStops),
+      maxTotalPrice: Number(input.maxTotPrice),
+      earliestArrivalTime: input.earliestDepartureArrivalTime,
+      latestArrivalTime: input.latestDepartureArrivalTime,
+    });
+
+    const returnMatches = this.findFlights({
+      originIata: destinationIata,
+      destinationIata: originIata,
+      flightContent: returnFlightContent,
+      tripLengthDays: Number(input.tripLength),
+      maxStops: maxStops && Number(maxStops),
+      maxTotalPrice: Number(input.maxTotPrice),
+      earliestDepartureTime: input.earliestReturnLeaveTime,
+      latestDepartureTime: input.latestReturnLeaveTime,
+    });
+
+    return JSON.stringify({ departureMatches, returnMatches }, null, 2);
   }
 }

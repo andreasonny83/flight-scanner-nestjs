@@ -1,15 +1,25 @@
 import { HttpModule } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import mockData from './__fixtures__/create-itinerary.json';
 import { FlightsService } from './flights.service';
-import { FlightContentLegs, FlightContentPlace, FlightContentPlaces, PlaceTypes } from './types';
+import {
+  FlightContent,
+  FlightContentLeg,
+  FlightContentLegs,
+  FlightContentPlaces,
+  PlaceTypes,
+  FindFlights,
+} from './types';
 
 describe('FlightsService', () => {
   let service: FlightsService;
   const testCiampinoName = 'Rome Ciampino';
+  const testCiampinoId = '95565062';
   const testCiampinoIata = 'CIA';
   const testFiumicinoIata = 'FCO';
   const testRomeIata = 'ROM';
+  const testStanstedId = '95565062';
 
   const mockPlaces: FlightContentPlaces = {
     '27539793': {
@@ -69,14 +79,14 @@ describe('FlightsService', () => {
       iata: '',
     },
     '95565052': {
-      entityId: '95565052',
+      entityId: testStanstedId,
       parentId: '27544008',
       name: 'London Stansted',
       type: PlaceTypes.PLACE_TYPE_AIRPORT,
       iata: 'STN',
     },
     '95565062': {
-      entityId: '95565062',
+      entityId: testCiampinoId,
       parentId: '27539793',
       name: testCiampinoName,
       type: PlaceTypes.PLACE_TYPE_AIRPORT,
@@ -124,20 +134,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 5,
         minute: 55,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 13,
         minute: 10,
-        second: 0,
       },
       durationInMinutes: 375,
       stopCount: 1,
@@ -146,20 +150,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 5,
         minute: 55,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 14,
         minute: 10,
-        second: 0,
       },
       durationInMinutes: 435,
       stopCount: 1,
@@ -168,20 +166,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 6,
         minute: 5,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 9,
         minute: 30,
-        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -190,20 +182,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 6,
         minute: 35,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 19,
         minute: 10,
-        second: 0,
       },
       durationInMinutes: 695,
       stopCount: 1,
@@ -212,20 +198,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 8,
         minute: 15,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 14,
         minute: 40,
-        second: 0,
       },
       durationInMinutes: 325,
       stopCount: 1,
@@ -234,20 +214,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 8,
         minute: 50,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 12,
         minute: 15,
-        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -256,20 +230,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 9,
         minute: 55,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 16,
         minute: 20,
-        second: 0,
       },
       durationInMinutes: 325,
       stopCount: 1,
@@ -278,20 +246,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 15,
         minute: 40,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 19,
         minute: 5,
-        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -300,20 +262,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 18,
         minute: 15,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 23,
         minute: 55,
-        second: 0,
       },
       durationInMinutes: 280,
       stopCount: 1,
@@ -322,20 +278,14 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 18,
         minute: 30,
-        second: 0,
       },
       arrivalDateTime: {
-        year: 2023,
-        month: 5,
         day: 31,
         hour: 21,
         minute: 55,
-        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -418,11 +368,193 @@ describe('FlightsService', () => {
         0,
       );
 
-      const res = service.filterLegsByAirport(mockLegs, testOriginIds, testDestinationIds, 1);
+      const oneStopRes = service.filterLegsByAirport(
+        mockLegs,
+        testOriginIds,
+        testDestinationIds,
+        1,
+      );
 
-      expect(res.length).toBe(6);
-      expect(res.length).toBeLessThan(Object.values(mockLegs).length);
-      expect(zeroStopsRes.length).toBeLessThan(res.length);
+      expect(oneStopRes.length).toBe(10);
+      expect(zeroStopsRes.length).toBe(4);
+      expect(zeroStopsRes.length).toBeLessThan(oneStopRes.length);
+    });
+  });
+
+  describe('filterTimes', () => {
+    const testLegs = [
+      {
+        departureDateTime: {
+          hour: 18,
+          minute: 0,
+        },
+        arrivalDateTime: {
+          hour: 20,
+          minute: 0,
+        },
+      },
+    ] as FlightContentLeg[];
+
+    it('should accept the earliest departure time matching the exact departure one', () => {
+      const res = service.filterTimes(testLegs, {
+        earliestDepartureTime: '18:00',
+      });
+      expect(res.length).toBe(1);
+      expect(res).toEqual(testLegs);
+    });
+
+    it('should filter by earliest departure time', () => {
+      const res = service.filterTimes(testLegs, {
+        earliestDepartureTime: '18:01',
+      });
+      expect(res.length).toBe(0);
+    });
+
+    it('should accept the latest departure time matching the exact departure one', () => {
+      const res = service.filterTimes(testLegs, {
+        latestDepartureTime: '18:00',
+      });
+      expect(res.length).toBe(1);
+      expect(res).toEqual(testLegs);
+    });
+
+    it('should filter by latest departure time', () => {
+      const res = service.filterTimes(testLegs, {
+        latestDepartureTime: '17:59',
+      });
+      expect(res.length).toBe(0);
+    });
+
+    it('should accept the earliest arrival time matching the exact arrival one', () => {
+      const res = service.filterTimes(testLegs, {
+        earliestArrTime: '20:00',
+      });
+      expect(res.length).toBe(1);
+      expect(res).toEqual(testLegs);
+    });
+
+    it('should filter by earliest arrival time', () => {
+      const res = service.filterTimes(testLegs, {
+        earliestArrTime: '20:01',
+      });
+      expect(res.length).toBe(0);
+    });
+
+    it('should accept the latest arrival time matching the exact arrival one', () => {
+      const res = service.filterTimes(testLegs, {
+        latestArrTime: '20:00',
+      });
+      expect(res.length).toBe(1);
+      expect(res).toEqual(testLegs);
+    });
+
+    it('should filter by latest arrival time', () => {
+      const res = service.filterTimes(testLegs, {
+        latestArrTime: '19:59',
+      });
+      expect(res.length).toBe(0);
+    });
+  });
+
+  describe('findFlights', () => {
+    const testContent = {
+      results: {
+        legs: {
+          '1': {
+            originPlaceId: testStanstedId,
+            destinationPlaceId: testCiampinoId,
+            durationInMinutes: 100,
+            stopCount: 0,
+            departureDateTime: { day: 1, hour: 1, minute: 0 },
+            arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          },
+          '2': {
+            originPlaceId: testStanstedId,
+            destinationPlaceId: testCiampinoId,
+            durationInMinutes: 100,
+            stopCount: 0,
+            departureDateTime: { day: 1, hour: 10, minute: 0 },
+            arrivalDateTime: { day: 1, hour: 12, minute: 0 },
+          },
+          '1-stop': {
+            originPlaceId: testStanstedId,
+            destinationPlaceId: testCiampinoId,
+            durationInMinutes: 100,
+            stopCount: 1,
+            departureDateTime: { day: 1, hour: 1, minute: 0 },
+            arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          },
+        },
+        places: mockPlaces,
+      },
+    } as any as FlightContent;
+
+    it('should accept an input research option', () => {
+      const input: FindFlights = {
+        flightContent: mockData.content as FlightContent,
+        originIata: 'STN',
+        destinationIata: 'CIA',
+        maxStops: 1,
+        earliestArrivalTime: '08:00',
+        latestArrivalTime: '11:00',
+        earliestDepartureTime: '21:00',
+        latestDepartureTime: '23:59',
+        maxTotalPrice: 100,
+      };
+
+      expect(service.findFlights(input)).toBeDefined();
+    });
+
+    it('should accept only the mandatory fields', () => {
+      const input: FindFlights = {
+        flightContent: mockData.content as FlightContent,
+        originIata: 'STN',
+        destinationIata: 'ROM',
+      };
+
+      expect(service.findFlights(input)).toBeDefined();
+    });
+
+    it('should find the matching flights', () => {
+      const input: FindFlights = {
+        flightContent: testContent,
+        originIata: 'STN',
+        destinationIata: 'ROM',
+        maxStops: 0,
+        latestArrivalTime: '2:00',
+        maxTotalPrice: 100,
+      };
+
+      const res = service.findFlights(input);
+
+      expect(res.length).toBe(1);
+      expect(res).toEqual([testContent.results.legs['1']]);
+    });
+
+    it('should find the matching flights when maxStops is set to 1', () => {
+      const input: FindFlights = {
+        flightContent: testContent,
+        originIata: 'STN',
+        destinationIata: 'ROM',
+        maxStops: 1,
+        latestArrivalTime: '2:00',
+        maxTotalPrice: 100,
+      };
+
+      const res = service.findFlights(input);
+
+      expect(res.length).toBe(2);
+      expect(res).toEqual([testContent.results.legs['1'], testContent.results.legs['1-stop']]);
+    });
+  });
+
+  describe('extractDate', () => {
+    it('should take a string as an input and return a 3 number array', () => {
+      const input = '2023-01-02';
+      const [resYear, resMonth, resDay] = service.extractDate(input);
+      expect(resYear).toBe(2023);
+      expect(resMonth).toBe(1);
+      expect(resDay).toBe(2);
     });
   });
 });

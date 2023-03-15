@@ -34,7 +34,12 @@ export interface FlightContentResults {
       items: Array<{
         price: {
           amount: string;
-          unit: string;
+          unit:
+            | 'PRICE_UNIT_UNSPECIFIED'
+            | 'PRICE_UNIT_WHOLE'
+            | 'PRICE_UNIT_CENTI'
+            | 'PRICE_UNIT_MILLI'
+            | 'PRICE_UNIT_MICRO';
           updateStatus: string;
         };
         deepLink: string;
@@ -48,29 +53,49 @@ export interface FlightContentResults {
   };
 }
 
-export interface FlightContentLegs {
-  [key: string]: {
-    originPlaceId: string;
-    destinationPlaceId: string;
-    departureDateTime: {
-      year: number;
-      month: number;
-      day: number;
-      hour: number;
-      minute: number;
-      second: number;
-    };
-    arrivalDateTime: {
-      year: number;
-      month: number;
-      day: number;
-      hour: number;
-      minute: number;
-      second: number;
-    };
-    durationInMinutes: number;
-    stopCount: number;
+export interface FlightContentLeg {
+  originPlaceId: string;
+  destinationPlaceId: string;
+  departureDateTime: {
+    day: number;
+    hour: number;
+    minute: number;
   };
+  arrivalDateTime: {
+    day: number;
+    hour: number;
+    minute: number;
+  };
+  durationInMinutes: number;
+  stopCount: number;
+}
+
+export interface FlightReturnLeg {
+  originPlace: string;
+  destinationPlace: string;
+  departureDateTime: {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+  };
+  arrivalDateTime: {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+  };
+  durationInMinutes: number;
+  stopCount: number;
+  departurePrice: string;
+  returnPrice: string;
+  totalPrice: string;
+}
+
+export interface FlightContentLegs {
+  [key: string]: FlightContentLeg;
 }
 
 export enum PlaceTypes {
@@ -101,4 +126,38 @@ export interface FlightContent {
   stats: {
     itineraries: FlightContentStats;
   };
+}
+
+export interface FindFlights {
+  flightContent: FlightContent;
+  originIata: string;
+  destinationIata: string;
+  tripLengthDays?: number;
+  maxStops?: number;
+  maxTotalPrice?: number;
+  earliestDepartureTime?: string;
+  latestDepartureTime?: string;
+  earliestArrivalTime?: string;
+  latestArrivalTime?: string;
+}
+export interface FilterTimesOptions {
+  earliestArrTime?: string;
+  latestArrTime?: string;
+  earliestDepartureTime?: string;
+  latestDepartureTime?: string;
+}
+
+export interface SearchInput {
+  originIata: string;
+  destinationIata: string;
+  departureDate: string;
+  returnDate?: string;
+  maxStops?: number;
+  currency?: string;
+  tripLength?: string;
+  earliestDepartureArrivalTime?: string;
+  latestDepartureArrivalTime?: string;
+  earliestReturnLeaveTime?: string;
+  latestReturnLeaveTime?: string;
+  maxTotPrice?: string;
 }
