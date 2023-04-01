@@ -53,20 +53,20 @@ http://localhost:4001/search-flights?originIata=STN&destinationIata=ROM&departur
 
 ## Search parameters
 
-| Parameter Name                 | Data Type | Default value   | Description                                                      |
-|--------------------------------|-----------|-----------------|------------------------------------------------------------------|
-| originIata                              | string |           | The IATA code for the departure airport.                         |
-| destinationIata                         | string |           | The IATA code for the arrival airport.                           |
-| departureDate                           | string |           | The date of departure in the format "YYYY-MM-DD".                |
-| returnDate (optional)                   | string |           | The date of return in the format "YYYY-MM-DD".                   |
-| maxStops (optional)                     | number |           | The maximum number of stops allowed on the trip.                 |
-| currency (optional)                     | string |           | The currency to use for pricing.                                 |
-| tripLength (optional)                   | string |           | The length of the trip in days.                                  |
-| earliestDepartureArrivalTime (optional) | string | undefined | The earliest time for departure/arrival, in the format "HH:mm".  |
-| latestDepartureArrivalTime (optional)   | string | undefined | The latest time for departure/arrival, in the format "HH:mm".    |
-| earliestReturnLeaveTime (optional)      | string | undefined | The earliest time for return/leave, in the format "HH:mm".       |
-| latestReturnLeaveTime (optional)        | string | undefined | The latest time for return/leave, in the format "HH:mm".         |
-| maxTotPrice (optional)                  | string | 0         | The maximum total price for the trip, in the currency specified. |
+| Parameter Name                          | Data Type | Description                                                      |
+|-----------------------------------------|-----------|------------------------------------------------------------------|
+| originIata                              | string    | The IATA code for the departure airport.                         |
+| destinationIata                         | string    | The IATA code for the arrival airport.                           |
+| departureDate                           | string    | The date of departure in the format "YYYY-MM-DD".                |
+| returnDate (optional)                   | string    | The date of return in the format "YYYY-MM-DD".                   |
+| maxStops (optional)                     | number    | The maximum number of stops allowed on the trip.                 |
+| currency (optional)                     | string    | The currency to use for pricing.                                 |
+| tripLength (optional)                   | string    | The length of the trip in days.                                  |
+| earliestDepartureArrivalTime (optional) | string    | The earliest time for departure/arrival, in the format "HH:mm".  |
+| latestDepartureArrivalTime (optional)   | string    | The latest time for departure/arrival, in the format "HH:mm".    |
+| earliestReturnLeaveTime (optional)      | string    | The earliest time for return/leave, in the format "HH:mm".       |
+| latestReturnLeaveTime (optional)        | string    | The latest time for return/leave, in the format "HH:mm".         |
+| maxTotPrice (optional)                  | string    | The maximum total price for the trip, in the currency specified. |
 
 ## Test
 
