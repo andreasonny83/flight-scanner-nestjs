@@ -1,27 +1,4 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
+# Flight Scanner NestJS
 ## Description
 
 Find your best flight deals.
@@ -72,6 +49,24 @@ The flight must be on the 1st of May 2023. The departure arrival time should not
 1.00PM and the return flight should not depart before 6.00PM
 
 http://localhost:4001/search-flights?originIata=STN&destinationIata=ROM&departureDate=2023-05-01&latestDepartureArrivalTime=13-00&earliestReturnLeaveTime=18-00
+
+
+## Search parameters
+
+| Parameter Name                 | Data Type | Default value   | Description                                                      |
+|--------------------------------|-----------|-----------------|------------------------------------------------------------------|
+| originIata                              | string |           | The IATA code for the departure airport.                         |
+| destinationIata                         | string |           | The IATA code for the arrival airport.                           |
+| departureDate                           | string |           | The date of departure in the format "YYYY-MM-DD".                |
+| returnDate (optional)                   | string |           | The date of return in the format "YYYY-MM-DD".                   |
+| maxStops (optional)                     | number |           | The maximum number of stops allowed on the trip.                 |
+| currency (optional)                     | string |           | The currency to use for pricing.                                 |
+| tripLength (optional)                   | string |           | The length of the trip in days.                                  |
+| earliestDepartureArrivalTime (optional) | string | undefined | The earliest time for departure/arrival, in the format "HH:mm".  |
+| latestDepartureArrivalTime (optional)   | string | undefined | The latest time for departure/arrival, in the format "HH:mm".    |
+| earliestReturnLeaveTime (optional)      | string | undefined | The earliest time for return/leave, in the format "HH:mm".       |
+| latestReturnLeaveTime (optional)        | string | undefined | The latest time for return/leave, in the format "HH:mm".         |
+| maxTotPrice (optional)                  | string | 0         | The maximum total price for the trip, in the currency specified. |
 
 ## Test
 
