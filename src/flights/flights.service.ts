@@ -301,7 +301,7 @@ export class FlightsService {
 
   filterItinerariesByPrices(
     itineraries: FlightItineraryWithPrice[],
-    maxPrice: string,
+    maxPrice?: string,
   ): FlightItineraryWithPrice[] {
     return (
       (maxPrice && itineraries.filter((itinerary) => +itinerary.totPrice <= +maxPrice)) ||
@@ -391,12 +391,12 @@ export class FlightsService {
     );
 
     const itineraries = this.createItineraries(depFlightsWithPrices, retFlightsWithPrices);
-    // const filteredItinerariesByPrices = this.filterItinerariesByPrices(
-    //   itineraries,
-    //   input.maxTotPrice,
-    // );
+    const filteredItinerariesByPrices = this.filterItinerariesByPrices(
+      itineraries,
+      input.maxTotPrice,
+    );
 
-    return JSON.stringify(itineraries, null, 2);
+    return JSON.stringify(filteredItinerariesByPrices, null, 2);
     // return JSON.stringify(
     //   { departureMatches: depFlightsWithPrices, returnMatches: retFlightsWithPrices },
     //   null,
