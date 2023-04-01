@@ -368,6 +368,10 @@ export class FlightsService {
 
     // const itineraries = this.createItineraries(depFlightsWithPrices, retFlightsWithPrices);
 
-    return JSON.stringify({ departureMatches, returnMatches }, null, 2);
+    return JSON.stringify(
+      { departureMatches: depFlightsWithPrices, returnMatches: retFlightsWithPrices },
+      null,
+      2,
+    );
   }
 }
