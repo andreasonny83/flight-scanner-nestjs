@@ -37,12 +37,11 @@ export class FlightsService {
 
   private async poll(sessionToken: string) {
     const pollUrl = `${this.#baseUrl}/flights/live/search/poll/${sessionToken}`;
-    const guid = uuidv4();
 
     try {
-      console.log('waiting 5 sec...');
-      await new Promise((resolve) => setTimeout(() => resolve(''), 5000));
-      console.log('done');
+      const guid = uuidv4();
+      console.log('waiting 3 sec...');
+      await new Promise((resolve) => setTimeout(() => resolve(''), 3000));
 
       const res = await this.httpService.axiosRef.post<CreateResponse>(pollUrl, null, {
         headers: {
@@ -54,13 +53,20 @@ export class FlightsService {
       if (res.status === 200) {
         if (res.data.status === 'RESULT_STATUS_INCOMPLETE') {
           console.log('Result status incomplete. starting over...');
-          return this.poll(sessionToken);
+          return this.poll(res.data.sessionToken);
         }
+
         return res.data.content;
       }
+
       throw Error('Bad results');
     } catch (err) {
-      console.log(err);
+      if (err.response.status === 429) {
+        console.log('Too many requests. Trying again...');
+        return this.poll(sessionToken);
+      }
+
+      console.log(err?.response?.statusText || err);
 
       return null;
     }
@@ -340,6 +346,8 @@ export class FlightsService {
       market,
       locale,
     });
+
+    console.log('All flying data correctly fetched.');
 
     const departureMatches = this.findFlightLegs({
       originIata,
