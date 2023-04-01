@@ -62,10 +62,10 @@ http://localhost:4001/search-flights?originIata=STN&destinationIata=ROM&departur
 | maxStops (optional)                     | number    | The maximum number of stops allowed on the trip.                 |
 | currency (optional)                     | string    | The currency to use for pricing.                                 |
 | tripLength (optional)                   | string    | The length of the trip in days.                                  |
-| earliestDepartureArrivalTime (optional) | string    | The earliest time for departure/arrival, in the format "HH:mm".  |
-| latestDepartureArrivalTime (optional)   | string    | The latest time for departure/arrival, in the format "HH:mm".    |
-| earliestReturnLeaveTime (optional)      | string    | The earliest time for return/leave, in the format "HH:mm".       |
-| latestReturnLeaveTime (optional)        | string    | The latest time for return/leave, in the format "HH:mm".         |
+| earliestDepartureArrivalTime (optional) | string    | The earliest time for departure/arrival, in the format "HH-mm".  |
+| latestDepartureArrivalTime (optional)   | string    | The latest time for departure/arrival, in the format "HH-mm".    |
+| earliestReturnLeaveTime (optional)      | string    | The earliest time for return/leave, in the format "HH-mm".       |
+| latestReturnLeaveTime (optional)        | string    | The latest time for return/leave, in the format "HH-mm".         |
 | maxTotPrice (optional)                  | string    | The maximum total price for the trip, in the currency specified. |
 
 ## Test
