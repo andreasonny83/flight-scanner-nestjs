@@ -24,7 +24,25 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[Nest](https://github.com/nestjs/nest) Find your best flight deals.
+
+## Example requests
+
+### Flight in and return on same day at any given time
+
+Find all flights starting from London Stansted and arriving in Rome (any airport).
+The flight must be on the 1st of May 2023. Note: The `returnDate` can be omitted when the same as
+the `departureDate`.
+
+http://localhost:4001/search-flights?originIata=STN&destinationIata=ROM&departureDate=2023-05-01&returnDate=2023-05-01
+
+### Flight in and return on same day with given times
+
+Find all flights starting from London Stansted and arriving in Rome (any airport).
+The flight must be on the 1st of May 2023. The departure arrival time should not be later than
+1.00PM and the return flight should not depart before 6.00PM
+
+http://localhost:4001/search-flights?originIata=STN&destinationIata=ROM&departureDate=2023-05-01&latestDepartureArrivalTime=13-00&earliestReturnLeaveTime=18-00
 
 ## Installation
 
@@ -40,6 +58,9 @@ $ pnpm run start
 
 # watch mode
 $ pnpm run start:dev
+
+# use mock data
+$ MOCK='true' npm run start:dev
 
 # production mode
 $ pnpm run start:prod
@@ -61,12 +82,6 @@ $ pnpm run test:cov
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 

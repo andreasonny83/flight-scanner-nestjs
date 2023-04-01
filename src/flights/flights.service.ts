@@ -2,15 +2,18 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import mockData from './__fixtures__/create-itinerary.json';
+import departureMock from './__fixtures__/create-itinerary.json';
+import returnMock from './__fixtures__/return-itinerary.json';
 import {
   FilterTimesOptions,
-  FindFlights,
+  FindFlightLegs,
   FlightContent,
   FlightContentLeg,
   FlightContentLegs,
+  FlightContentLegWithPrices,
   FlightContentPlace,
   FlightContentPlaces,
+  FlightItineraries,
   PlaceTypes,
   SearchInput,
 } from './types';
@@ -157,13 +160,15 @@ export class FlightsService {
     originIds: string[],
     destinationIds: string[],
     maxStopCount = 0,
-  ) {
-    const filteredLegs = Object.values(legs).filter(
-      (leg) =>
-        originIds.includes(leg.originPlaceId) &&
-        destinationIds.includes(leg.destinationPlaceId) &&
-        leg.stopCount <= maxStopCount,
-    );
+  ): FlightContentLeg[] {
+    const filteredLegs: FlightContentLeg[] = Object.keys(legs)
+      .filter(
+        (leg) =>
+          originIds.includes(legs[leg].originPlaceId) &&
+          destinationIds.includes(legs[leg].destinationPlaceId) &&
+          legs[leg].stopCount <= maxStopCount,
+      )
+      .map((leg) => ({ ...legs[leg], itineraryId: `${leg}` }));
 
     return filteredLegs;
   }
@@ -201,7 +206,7 @@ export class FlightsService {
     });
   }
 
-  findFlights({
+  findFlightLegs({
     flightContent,
     destinationIata,
     originIata,
@@ -210,9 +215,7 @@ export class FlightsService {
     earliestArrivalTime: earlArr,
     latestArrivalTime: latArr,
     maxStops,
-    maxTotalPrice,
-    tripLengthDays,
-  }: FindFlights) {
+  }: FindFlightLegs): FlightContentLeg[] {
     const legs = flightContent.results.legs;
     const places = flightContent.results.places;
 
@@ -242,6 +245,74 @@ export class FlightsService {
     return inputDate.split('-').map((digit) => Number(digit));
   }
 
+  addMatchingPrices(
+    itineraries: FlightItineraries,
+    flightContent: FlightContentLeg[],
+  ): FlightContentLegWithPrices[] {
+    const departureFlights = flightContent.flatMap((content) => {
+      const { pricingOptions } = itineraries[content.itineraryId];
+      const prices = pricingOptions.flatMap((pricingOption) =>
+        pricingOption.items.map((pricingOptionItem) => {
+          const { amount, unit } = pricingOptionItem.price;
+          const unitFactors = {
+            PRICE_UNIT_CENTI: 100,
+            PRICE_UNIT_MILLI: 1000,
+            PRICE_UNIT_MICRO: 1000000,
+          };
+
+          const totAmount = unit in unitFactors ? `${Number(amount) / unitFactors[unit]}` : amount;
+
+          return {
+            deepLink: pricingOptionItem.deepLink,
+            price: totAmount,
+          };
+        }),
+      );
+
+      return prices.flatMap((price) => ({
+        ...content,
+        ...price,
+      }));
+    });
+
+    return departureFlights;
+  }
+
+  createItineraries(
+    depContent: FlightContentLegWithPrices[],
+    retContent: FlightContentLegWithPrices[],
+  ) {
+    return [];
+  }
+
+  async fetchData({
+    originIata,
+    destinationIata,
+    depYear,
+    retYear,
+    depMonth,
+    retMonth,
+    depDay,
+    retDay,
+    currency,
+    market,
+    locale,
+  }): Promise<[FlightContent, FlightContent]> {
+    if (process.env.MOCK === 'true') {
+      console.log('Returning Mock data');
+
+      const depMock = JSON.parse(JSON.stringify(departureMock.content)) as FlightContent;
+      const retMock = JSON.parse(JSON.stringify(returnMock.content)) as FlightContent;
+
+      return Promise.all([depMock, retMock]);
+    }
+
+    return Promise.all([
+      this.create(originIata, destinationIata, depYear, depMonth, depDay, currency, market, locale),
+      this.create(destinationIata, originIata, retYear, retMonth, retDay, currency, market, locale),
+    ]);
+  }
+
   async search(input: SearchInput) {
     const { originIata, destinationIata, maxStops, departureDate, returnDate } = input;
     const [depYear, depMonth, depDay] = this.extractDate(departureDate);
@@ -252,35 +323,50 @@ export class FlightsService {
     const market = 'UK';
     const locale = 'en-GB';
 
-    const [departureFlightContent, returnFlightContent] = await Promise.all([
-      this.create(originIata, destinationIata, depYear, depMonth, depDay, currency, market, locale),
-      this.create(destinationIata, originIata, retYear, retMonth, retDay, currency, market, locale),
-    ]);
+    const [departureFlightContent, returnFlightContent] = await this.fetchData({
+      originIata,
+      destinationIata,
+      depYear,
+      retYear,
+      depMonth,
+      retMonth,
+      depDay,
+      retDay,
+      currency,
+      market,
+      locale,
+    });
 
-    // const res = mockData;
-    // return JSON.stringify(res, null, 2);
-
-    const departureMatches = this.findFlights({
+    const departureMatches = this.findFlightLegs({
       originIata,
       destinationIata,
       flightContent: departureFlightContent,
-      tripLengthDays: Number(input.tripLength),
       maxStops: maxStops && Number(maxStops),
       maxTotalPrice: Number(input.maxTotPrice),
       earliestArrivalTime: input.earliestDepartureArrivalTime,
       latestArrivalTime: input.latestDepartureArrivalTime,
     });
 
-    const returnMatches = this.findFlights({
+    const returnMatches = this.findFlightLegs({
       originIata: destinationIata,
       destinationIata: originIata,
       flightContent: returnFlightContent,
-      tripLengthDays: Number(input.tripLength),
       maxStops: maxStops && Number(maxStops),
       maxTotalPrice: Number(input.maxTotPrice),
       earliestDepartureTime: input.earliestReturnLeaveTime,
       latestDepartureTime: input.latestReturnLeaveTime,
     });
+
+    const depFlightsWithPrices = this.addMatchingPrices(
+      departureFlightContent.results.itineraries,
+      departureMatches,
+    );
+    const retFlightsWithPrices = this.addMatchingPrices(
+      returnFlightContent.results.itineraries,
+      returnMatches,
+    );
+
+    // const itineraries = this.createItineraries(depFlightsWithPrices, retFlightsWithPrices);
 
     return JSON.stringify({ departureMatches, returnMatches }, null, 2);
   }

@@ -9,7 +9,9 @@ import {
   FlightContentLegs,
   FlightContentPlaces,
   PlaceTypes,
-  FindFlights,
+  FindFlightLegs,
+  FlightItineraries,
+  FlightContentLegWithPrices,
 } from './types';
 
 describe('FlightsService', () => {
@@ -397,7 +399,7 @@ describe('FlightsService', () => {
 
     it('should accept the earliest departure time matching the exact departure one', () => {
       const res = service.filterTimes(testLegs, {
-        earliestDepartureTime: '18:00',
+        earliestDepartureTime: '18-00',
       });
       expect(res.length).toBe(1);
       expect(res).toEqual(testLegs);
@@ -405,14 +407,14 @@ describe('FlightsService', () => {
 
     it('should filter by earliest departure time', () => {
       const res = service.filterTimes(testLegs, {
-        earliestDepartureTime: '18:01',
+        earliestDepartureTime: '18-01',
       });
       expect(res.length).toBe(0);
     });
 
     it('should accept the latest departure time matching the exact departure one', () => {
       const res = service.filterTimes(testLegs, {
-        latestDepartureTime: '18:00',
+        latestDepartureTime: '18-00',
       });
       expect(res.length).toBe(1);
       expect(res).toEqual(testLegs);
@@ -420,14 +422,14 @@ describe('FlightsService', () => {
 
     it('should filter by latest departure time', () => {
       const res = service.filterTimes(testLegs, {
-        latestDepartureTime: '17:59',
+        latestDepartureTime: '17-59',
       });
       expect(res.length).toBe(0);
     });
 
     it('should accept the earliest arrival time matching the exact arrival one', () => {
       const res = service.filterTimes(testLegs, {
-        earliestArrTime: '20:00',
+        earliestArrTime: '20-00',
       });
       expect(res.length).toBe(1);
       expect(res).toEqual(testLegs);
@@ -435,14 +437,14 @@ describe('FlightsService', () => {
 
     it('should filter by earliest arrival time', () => {
       const res = service.filterTimes(testLegs, {
-        earliestArrTime: '20:01',
+        earliestArrTime: '20-01',
       });
       expect(res.length).toBe(0);
     });
 
     it('should accept the latest arrival time matching the exact arrival one', () => {
       const res = service.filterTimes(testLegs, {
-        latestArrTime: '20:00',
+        latestArrTime: '20-00',
       });
       expect(res.length).toBe(1);
       expect(res).toEqual(testLegs);
@@ -450,13 +452,13 @@ describe('FlightsService', () => {
 
     it('should filter by latest arrival time', () => {
       const res = service.filterTimes(testLegs, {
-        latestArrTime: '19:59',
+        latestArrTime: '19-59',
       });
       expect(res.length).toBe(0);
     });
   });
 
-  describe('findFlights', () => {
+  describe('findFlightLegs', () => {
     const testContent = {
       results: {
         legs: {
@@ -490,7 +492,7 @@ describe('FlightsService', () => {
     } as any as FlightContent;
 
     it('should accept an input research option', () => {
-      const input: FindFlights = {
+      const input: FindFlightLegs = {
         flightContent: mockData.content as FlightContent,
         originIata: 'STN',
         destinationIata: 'CIA',
@@ -502,49 +504,52 @@ describe('FlightsService', () => {
         maxTotalPrice: 100,
       };
 
-      expect(service.findFlights(input)).toBeDefined();
+      expect(service.findFlightLegs(input)).toBeDefined();
     });
 
     it('should accept only the mandatory fields', () => {
-      const input: FindFlights = {
+      const input: FindFlightLegs = {
         flightContent: mockData.content as FlightContent,
         originIata: 'STN',
         destinationIata: 'ROM',
       };
 
-      expect(service.findFlights(input)).toBeDefined();
+      expect(service.findFlightLegs(input)).toBeDefined();
     });
 
     it('should find the matching flights', () => {
-      const input: FindFlights = {
+      const input: FindFlightLegs = {
         flightContent: testContent,
         originIata: 'STN',
         destinationIata: 'ROM',
         maxStops: 0,
-        latestArrivalTime: '2:00',
+        latestArrivalTime: '2-00',
         maxTotalPrice: 100,
       };
 
-      const res = service.findFlights(input);
+      const res = service.findFlightLegs(input);
 
       expect(res.length).toBe(1);
-      expect(res).toEqual([testContent.results.legs['1']]);
+      expect(res).toEqual([{ ...testContent.results.legs['1'], itineraryId: '1' }]);
     });
 
     it('should find the matching flights when maxStops is set to 1', () => {
-      const input: FindFlights = {
+      const input: FindFlightLegs = {
         flightContent: testContent,
         originIata: 'STN',
         destinationIata: 'ROM',
         maxStops: 1,
-        latestArrivalTime: '2:00',
+        latestArrivalTime: '2-00',
         maxTotalPrice: 100,
       };
 
-      const res = service.findFlights(input);
+      const res = service.findFlightLegs(input);
 
       expect(res.length).toBe(2);
-      expect(res).toEqual([testContent.results.legs['1'], testContent.results.legs['1-stop']]);
+      expect(res).toEqual([
+        { ...testContent.results.legs['1'], itineraryId: '1' },
+        { ...testContent.results.legs['1-stop'], itineraryId: '1-stop' },
+      ]);
     });
   });
 
@@ -555,6 +560,285 @@ describe('FlightsService', () => {
       expect(resYear).toBe(2023);
       expect(resMonth).toBe(1);
       expect(resDay).toBe(2);
+    });
+  });
+
+  describe('addMatchingPrices', () => {
+    it('should add the prices to the flightContent', () => {
+      const flightItineraries: FlightItineraries = {
+        '16574-2305310555--31915,-30727-1-11493-2305311310': {
+          pricingOptions: [
+            {
+              price: {
+                amount: '64000',
+                unit: 'PRICE_UNIT_CENTI',
+                updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+              },
+              items: [
+                {
+                  price: {
+                    amount: '64000',
+                    unit: 'PRICE_UNIT_CENTI',
+                    updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+                  },
+                  deepLink:
+                    'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+                  fares: [
+                    {
+                      segmentId: '16574-9884-2305310555-2305310850--31915',
+                    },
+                    {
+                      segmentId: '13572-11493-2305311200-2305311310--30727',
+                    },
+                  ],
+                },
+                {
+                  price: {
+                    amount: '63000',
+                    unit: 'PRICE_UNIT_MILLI',
+                    updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+                  },
+                  deepLink:
+                    'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+                  fares: [
+                    {
+                      segmentId: '16574-9884-2305310555-2305310850--31915',
+                    },
+                    {
+                      segmentId: '13572-11493-2305311200-2305311310--30727',
+                    },
+                  ],
+                },
+              ],
+              id: '8ATPRsYMPdiG',
+            },
+            {
+              price: {
+                amount: '12000000',
+                unit: 'PRICE_UNIT_MICRO',
+                updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+              },
+              items: [
+                {
+                  price: {
+                    amount: '12000000',
+                    unit: 'PRICE_UNIT_MICRO',
+                    updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+                  },
+                  deepLink:
+                    'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+                  fares: [
+                    {
+                      segmentId: '16574-9884-2305310555-2305310850--31915',
+                    },
+                    {
+                      segmentId: '13572-11493-2305311200-2305311310--30727',
+                    },
+                  ],
+                },
+                {
+                  price: {
+                    amount: '130',
+                    unit: 'PRICE_UNIT_WHOLE',
+                    updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+                  },
+                  deepLink:
+                    'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+                  fares: [
+                    {
+                      segmentId: '16574-9884-2305310555-2305310850--31915',
+                    },
+                    {
+                      segmentId: '13572-11493-2305311200-2305311310--30727',
+                    },
+                  ],
+                },
+              ],
+              id: '8ATPRsYMPdiG',
+            },
+          ],
+          legIds: ['16574-2305310555--31915,-30727-1-11493-2305311310'],
+        },
+        '16574-2305310555--31915,-30727-1-11493-2305311410': {
+          pricingOptions: [
+            {
+              price: {
+                amount: '62200',
+                unit: 'PRICE_UNIT_MILLI',
+                updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+              },
+              items: [
+                {
+                  price: {
+                    amount: '62200',
+                    unit: 'PRICE_UNIT_MILLI',
+                    updateStatus: 'PRICE_UPDATE_STATUS_UNSPECIFIED',
+                  },
+                  deepLink:
+                    'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2133%257C13572%257C2023-05-31T13%253A00%257C11493%257C2023-05-31T14%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D62.20%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C5343883620813655327%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+                  fares: [
+                    {
+                      segmentId: '16574-9884-2305310555-2305310850--31915',
+                    },
+                    {
+                      segmentId: '13572-11493-2305311300-2305311410--30727',
+                    },
+                  ],
+                },
+              ],
+              id: 'gqsoUwezoYbT',
+            },
+          ],
+          legIds: ['16574-2305310555--31915,-30727-1-11493-2305311410'],
+        },
+      };
+
+      const flightLegs: FlightContentLeg[] = [
+        {
+          originPlaceId: '123',
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          stopCount: 0,
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+        },
+        {
+          originPlaceId: '123',
+          destinationPlaceId: '789',
+          durationInMinutes: 100,
+          stopCount: 0,
+          departureDateTime: { day: 1, hour: 10, minute: 0 },
+          arrivalDateTime: { day: 1, hour: 12, minute: 0 },
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311410',
+        },
+      ];
+
+      const expectedRes: FlightContentLegWithPrices[] = [
+        {
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '640',
+        },
+        {
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '63',
+        },
+        {
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '12',
+        },
+        {
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '130',
+        },
+        {
+          arrivalDateTime: { day: 1, hour: 12, minute: 0 },
+          departureDateTime: { day: 1, hour: 10, minute: 0 },
+          destinationPlaceId: '789',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311410',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2133%257C13572%257C2023-05-31T13%253A00%257C11493%257C2023-05-31T14%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D62.20%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C5343883620813655327%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '62.2',
+        },
+      ];
+
+      const res = service.addMatchingPrices(flightItineraries, flightLegs);
+
+      expect(res).toEqual(expectedRes);
+    });
+  });
+
+  describe('createItineraries', () => {
+    it('should create all the possible itineraries', () => {
+      const departures: FlightContentLegWithPrices[] = [
+        {
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '640',
+        },
+        {
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '63',
+        },
+      ];
+      const returns: FlightContentLegWithPrices[] = [
+        {
+          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          destinationPlaceId: '456',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2037%257C13572%257C2023-05-31T12%253A00%257C11493%257C2023-05-31T13%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D64.00%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C3135137620125792512%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '130',
+        },
+        {
+          arrivalDateTime: { day: 1, hour: 12, minute: 0 },
+          departureDateTime: { day: 1, hour: 10, minute: 0 },
+          destinationPlaceId: '789',
+          durationInMinutes: 100,
+          itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311410',
+          originPlaceId: '123',
+          stopCount: 0,
+          deepLink:
+            'https://skyscanner.pxf.io/c/2850210/1103265/13416?u=https%3A%2F%2Fwww.skyscanner.net%2Ftransport_deeplink%2F4.0%2FUK%2Fen-GB%2FGBP%2Fctuk%2F1%2F16574.11493.2023-05-31%2Fair%2Ftrava%2Fflights%3Fitinerary%3Dflight%257C-31915%257C2696%257C16574%257C2023-05-31T05%253A55%257C9884%257C2023-05-31T08%253A50%257C115%257C-%257C-%257C-%253Bflight%257C-30727%257C2133%257C13572%257C2023-05-31T13%253A00%257C11493%257C2023-05-31T14%253A10%257C70%257C-%257C-%257C-%26carriers%3D-31915%252C-30727%26operators%3D-31915%253B-30727%26passengers%3D1%26channel%3Ddataapi%26cabin_class%3Deconomy%26facilitated%3Dfalse%26fps_session_id%3D4107902d-d880-4e25-9466-f791168ee447%26ticket_price%3D62.20%26is_npt%3Dfalse%26is_multipart%3Dfalse%26client_id%3Dskyscanner_b2b%26request_id%3D6e0602db-4d7c-47be-9607-c33c40a31d72%26q_ids%3DH4sIAAAAAAAA_-OS4mJJLinNFmLmuKUixczx10ShYc6txWxGTAqMABgDqkIcAAAA%257C5343883620813655327%257C2%26q_sources%3DJACQUARD%26commercial_filters%3Dfalse%26q_datetime_utc%3D2023-03-11T17%253A13%253A50%26transfer_protection%3Dprotected%26pqid%3Dtrue%26api_logo%3Dhttps%253A%252F%252Flogos.skyscnr.com%252Fimages%252Fpartners%252Fdefault.png%26api_pbs%3Dtrue%26associate_id%3DAFF_TRA_19354_00001%26app_id%3DG4IcGcdmVpjw77HZ3bCQanBnLBKNE76h2RC%25252Bq0zWNAx4vlSXpxjay009pDhvp9R8&associateid=AFF_TRA_19354_00001',
+          price: '62.2',
+        },
+      ];
+
+      const res = service.createItineraries(departures, returns);
     });
   });
 });
