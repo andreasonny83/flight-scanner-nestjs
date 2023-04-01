@@ -285,6 +285,10 @@ export class FlightsService {
     return [];
   }
 
+  filterItinerariesByPrices() {
+    return [];
+  }
+
   async fetchData({
     originIata,
     destinationIata,
@@ -342,7 +346,6 @@ export class FlightsService {
       destinationIata,
       flightContent: departureFlightContent,
       maxStops: maxStops && Number(maxStops),
-      maxTotalPrice: Number(input.maxTotPrice),
       earliestArrivalTime: input.earliestDepartureArrivalTime,
       latestArrivalTime: input.latestDepartureArrivalTime,
     });
@@ -352,7 +355,6 @@ export class FlightsService {
       destinationIata: originIata,
       flightContent: returnFlightContent,
       maxStops: maxStops && Number(maxStops),
-      maxTotalPrice: Number(input.maxTotPrice),
       earliestDepartureTime: input.earliestReturnLeaveTime,
       latestDepartureTime: input.latestReturnLeaveTime,
     });
@@ -367,6 +369,7 @@ export class FlightsService {
     );
 
     // const itineraries = this.createItineraries(depFlightsWithPrices, retFlightsWithPrices);
+    // const filteredItinerariesByPrices = this.filterItinerariesByPrices(itineraries);
 
     return JSON.stringify(
       { departureMatches: depFlightsWithPrices, returnMatches: retFlightsWithPrices },
