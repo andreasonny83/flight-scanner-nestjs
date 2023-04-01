@@ -55,6 +55,12 @@ export interface FlightItinerary {
   legIds: string[];
 }
 
+export interface FlightItineraryWithPrice {
+  departure: FlightContentLegWithPrices;
+  return: FlightContentLegWithPrices;
+  totPrice: string;
+}
+
 export interface FlightContentLegWithPrices extends FlightContentLeg {
   deepLink: string;
   price: string;

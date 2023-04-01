@@ -14,6 +14,8 @@ import {
   FlightContentPlace,
   FlightContentPlaces,
   FlightItineraries,
+  FlightItinerary,
+  FlightItineraryWithPrice,
   PlaceTypes,
   SearchInput,
 } from './types';
@@ -287,12 +289,24 @@ export class FlightsService {
   createItineraries(
     depContent: FlightContentLegWithPrices[],
     retContent: FlightContentLegWithPrices[],
-  ) {
-    return [];
+  ): FlightItineraryWithPrice[] {
+    return depContent.flatMap((departureContent) =>
+      retContent.map((returnContent) => ({
+        departure: departureContent,
+        return: returnContent,
+        totPrice: `${+departureContent.price + +returnContent.price}`,
+      })),
+    );
   }
 
-  filterItinerariesByPrices() {
-    return [];
+  filterItinerariesByPrices(
+    itineraries: FlightItineraryWithPrice[],
+    maxPrice: string,
+  ): FlightItineraryWithPrice[] {
+    return (
+      (maxPrice && itineraries.filter((itinerary) => +itinerary.totPrice <= +maxPrice)) ||
+      itineraries
+    );
   }
 
   async fetchData({
@@ -376,13 +390,17 @@ export class FlightsService {
       returnMatches,
     );
 
-    // const itineraries = this.createItineraries(depFlightsWithPrices, retFlightsWithPrices);
-    // const filteredItinerariesByPrices = this.filterItinerariesByPrices(itineraries);
+    const itineraries = this.createItineraries(depFlightsWithPrices, retFlightsWithPrices);
+    // const filteredItinerariesByPrices = this.filterItinerariesByPrices(
+    //   itineraries,
+    //   input.maxTotPrice,
+    // );
 
-    return JSON.stringify(
-      { departureMatches: depFlightsWithPrices, returnMatches: retFlightsWithPrices },
-      null,
-      2,
-    );
+    return JSON.stringify(itineraries, null, 2);
+    // return JSON.stringify(
+    //   { departureMatches: depFlightsWithPrices, returnMatches: retFlightsWithPrices },
+    //   null,
+    //   2,
+    // );
   }
 }
