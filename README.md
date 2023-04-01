@@ -24,7 +24,36 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) Find your best flight deals.
+Find your best flight deals.
+
+## Installation
+
+```bash
+$ pnpm install
+```
+
+## Environment Variables
+
+Rename the `.env.sample` to `.env` and add the missing `SEARCH_FLIGHTS_API_KEY`.
+This is the SkyScanner API key. You can use a free testing one or register your own business key.
+Read more about that on: https://developers.skyscanner.net/docs/getting-started/authentication
+
+## Running the app
+
+```bash
+# development
+$ pnpm run start
+
+# watch mode
+$ pnpm run start:dev
+
+# use mock data
+$ MOCK='true' npm run start:dev
+
+# production mode
+$ pnpm run start:prod
+```
+
 
 ## Example requests
 
@@ -43,28 +72,6 @@ The flight must be on the 1st of May 2023. The departure arrival time should not
 1.00PM and the return flight should not depart before 6.00PM
 
 http://localhost:4001/search-flights?originIata=STN&destinationIata=ROM&departureDate=2023-05-01&latestDepartureArrivalTime=13-00&earliestReturnLeaveTime=18-00
-
-## Installation
-
-```bash
-$ pnpm install
-```
-
-## Running the app
-
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# use mock data
-$ MOCK='true' npm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
 
 ## Test
 
