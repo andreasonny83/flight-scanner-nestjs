@@ -309,6 +309,35 @@ export class FlightsService {
     );
   }
 
+  findByAirportId(airportId: string, places: FlightContentPlaces) {
+    return Object.values(places).find((place) => place.entityId === airportId);
+  }
+
+  formatDate({
+    year,
+    month,
+    day,
+    hour,
+    minute,
+    second,
+  }: {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+    second: number;
+  }) {
+    const fMonth = `${month}`.length === 1 ? `0${month}` : month;
+    const fDay = `${day}`.length === 1 ? `0${day}` : day;
+    const fHour = `${hour}`.length === 1 ? `0${hour}` : hour;
+    const fMinute = `${minute}`.length === 1 ? `0${minute}` : minute;
+    const fSecond = `${second}`.length === 1 ? `0${second}` : second;
+    const date = `${year}-${fMonth}-${fDay}T${fHour}:${fMinute}:${fSecond}.000Z`;
+
+    return new Date(date).toLocaleString();
+  }
+
   async fetchData({
     originIata,
     destinationIata,
@@ -337,6 +366,28 @@ export class FlightsService {
     ]);
   }
 
+  formatResult(data: FlightItineraryWithPrice[], places: FlightContentPlaces) {
+    return data.map((itemData) => {
+      return {
+        departure: {
+          origin: this.findByAirportId(itemData.departure.originPlaceId, places).name,
+          destination: this.findByAirportId(itemData.departure.destinationPlaceId, places).name,
+          departureDateTime: this.formatDate(itemData.departure.arrivalDateTime),
+          link: itemData.departure.deepLink,
+          price: itemData.departure.price,
+        },
+        return: {
+          origin: this.findByAirportId(itemData.return.originPlaceId, places).name,
+          destination: this.findByAirportId(itemData.return.destinationPlaceId, places).name,
+          departureDateTime: this.formatDate(itemData.return.arrivalDateTime),
+          link: itemData.return.deepLink,
+          price: itemData.return.price,
+        },
+        totalPrice: itemData.totPrice,
+      };
+    });
+  }
+
   async search(input: SearchInput) {
     const { originIata, destinationIata, maxStops, departureDate, returnDate } = input;
     const [depYear, depMonth, depDay] = this.extractDate(departureDate);
@@ -360,6 +411,8 @@ export class FlightsService {
       market,
       locale,
     });
+
+    const { places } = departureFlightContent.results;
 
     console.log('All flying data correctly fetched.');
 
@@ -395,8 +448,10 @@ export class FlightsService {
       itineraries,
       input.maxTotPrice,
     );
+    const formattedResultData = this.formatResult(filteredItinerariesByPrices, places);
 
-    return JSON.stringify(filteredItinerariesByPrices, null, 2);
+    // return JSON.stringify(filteredItinerariesByPrices, null, 2);
+    return JSON.stringify(formattedResultData, null, 2);
     // return JSON.stringify(
     //   { departureMatches: depFlightsWithPrices, returnMatches: retFlightsWithPrices },
     //   null,

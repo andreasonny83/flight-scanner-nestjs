@@ -22,7 +22,7 @@ describe('FlightsService', () => {
   const testCiampinoIata = 'CIA';
   const testFiumicinoIata = 'FCO';
   const testRomeIata = 'ROM';
-  const testStanstedId = '95565062';
+  const testStanstedId = '95565052';
 
   const mockPlaces: FlightContentPlaces = {
     '27539793': {
@@ -137,14 +137,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 5,
         minute: 55,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 13,
         minute: 10,
+        second: 0,
       },
       durationInMinutes: 375,
       stopCount: 1,
@@ -153,14 +159,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 5,
         minute: 55,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 14,
         minute: 10,
+        second: 0,
       },
       durationInMinutes: 435,
       stopCount: 1,
@@ -169,14 +181,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 6,
         minute: 5,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 9,
         minute: 30,
+        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -185,14 +203,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 6,
         minute: 35,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 19,
         minute: 10,
+        second: 0,
       },
       durationInMinutes: 695,
       stopCount: 1,
@@ -201,14 +225,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 8,
         minute: 15,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 14,
         minute: 40,
+        second: 0,
       },
       durationInMinutes: 325,
       stopCount: 1,
@@ -217,14 +247,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 8,
         minute: 50,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 12,
         minute: 15,
+        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -233,14 +269,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 9,
         minute: 55,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 16,
         minute: 20,
+        second: 0,
       },
       durationInMinutes: 325,
       stopCount: 1,
@@ -249,14 +291,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 15,
         minute: 40,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 19,
         minute: 5,
+        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -265,14 +313,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565065',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 18,
         minute: 15,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 23,
         minute: 55,
+        second: 0,
       },
       durationInMinutes: 280,
       stopCount: 1,
@@ -281,14 +335,20 @@ describe('FlightsService', () => {
       originPlaceId: '95565052',
       destinationPlaceId: '95565062',
       departureDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 18,
         minute: 30,
+        second: 0,
       },
       arrivalDateTime: {
+        year: 2023,
+        month: 1,
         day: 31,
         hour: 21,
         minute: 55,
+        second: 0,
       },
       durationInMinutes: 145,
       stopCount: 0,
@@ -700,8 +760,8 @@ describe('FlightsService', () => {
           destinationPlaceId: '456',
           durationInMinutes: 100,
           stopCount: 0,
-          departureDateTime: { day: 1, hour: 1, minute: 0 },
-          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
+          departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
+          arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
           itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
         },
         {
@@ -709,16 +769,16 @@ describe('FlightsService', () => {
           destinationPlaceId: '789',
           durationInMinutes: 100,
           stopCount: 0,
-          departureDateTime: { day: 1, hour: 10, minute: 0 },
-          arrivalDateTime: { day: 1, hour: 12, minute: 0 },
+          departureDateTime: { year: 2023, month: 1, day: 1, hour: 10, minute: 0, second: 0 },
+          arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
           itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311410',
         },
       ];
 
       const expectedRes: FlightContentLegWithPrices[] = [
         {
-          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+          departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
           destinationPlaceId: '456',
           durationInMinutes: 100,
           itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -729,8 +789,8 @@ describe('FlightsService', () => {
           price: '640',
         },
         {
-          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+          departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
           destinationPlaceId: '456',
           durationInMinutes: 100,
           itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -741,8 +801,8 @@ describe('FlightsService', () => {
           price: '63',
         },
         {
-          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+          departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
           destinationPlaceId: '456',
           durationInMinutes: 100,
           itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -753,8 +813,8 @@ describe('FlightsService', () => {
           price: '12',
         },
         {
-          arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-          departureDateTime: { day: 1, hour: 1, minute: 0 },
+          arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+          departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
           destinationPlaceId: '456',
           durationInMinutes: 100,
           itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -765,8 +825,8 @@ describe('FlightsService', () => {
           price: '130',
         },
         {
-          arrivalDateTime: { day: 1, hour: 12, minute: 0 },
-          departureDateTime: { day: 1, hour: 10, minute: 0 },
+          arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
+          departureDateTime: { year: 2023, month: 1, day: 1, hour: 10, minute: 0, second: 0 },
           destinationPlaceId: '789',
           durationInMinutes: 100,
           itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311410',
@@ -787,8 +847,8 @@ describe('FlightsService', () => {
   describe('createItineraries', () => {
     const departures: FlightContentLegWithPrices[] = [
       {
-        arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-        departureDateTime: { day: 1, hour: 1, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
         destinationPlaceId: '456',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -799,8 +859,8 @@ describe('FlightsService', () => {
         price: '83.3',
       },
       {
-        arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-        departureDateTime: { day: 1, hour: 1, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
         destinationPlaceId: '456',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -813,8 +873,8 @@ describe('FlightsService', () => {
     ];
     const returns: FlightContentLegWithPrices[] = [
       {
-        arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-        departureDateTime: { day: 1, hour: 1, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
         destinationPlaceId: '456',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -825,8 +885,8 @@ describe('FlightsService', () => {
         price: '72.5',
       },
       {
-        arrivalDateTime: { day: 1, hour: 12, minute: 0 },
-        departureDateTime: { day: 1, hour: 10, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 10, minute: 0, second: 0 },
         destinationPlaceId: '789',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311410',
@@ -876,8 +936,8 @@ describe('FlightsService', () => {
   describe('filteredItinerariesByPrices', () => {
     const departures: FlightContentLegWithPrices[] = [
       {
-        arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-        departureDateTime: { day: 1, hour: 1, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
         destinationPlaceId: '456',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -888,8 +948,8 @@ describe('FlightsService', () => {
         price: '50.0',
       },
       {
-        arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-        departureDateTime: { day: 1, hour: 1, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
         destinationPlaceId: '456',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -902,8 +962,8 @@ describe('FlightsService', () => {
     ];
     const returns: FlightContentLegWithPrices[] = [
       {
-        arrivalDateTime: { day: 1, hour: 2, minute: 0 },
-        departureDateTime: { day: 1, hour: 1, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 2, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 1, minute: 0, second: 0 },
         destinationPlaceId: '456',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311310',
@@ -914,8 +974,8 @@ describe('FlightsService', () => {
         price: '20.5',
       },
       {
-        arrivalDateTime: { day: 1, hour: 12, minute: 0 },
-        departureDateTime: { day: 1, hour: 10, minute: 0 },
+        arrivalDateTime: { year: 2023, month: 1, day: 1, hour: 12, minute: 0, second: 0 },
+        departureDateTime: { year: 2023, month: 1, day: 1, hour: 10, minute: 0, second: 0 },
         destinationPlaceId: '789',
         durationInMinutes: 100,
         itineraryId: '16574-2305310555--31915,-30727-1-11493-2305311410',
@@ -959,6 +1019,34 @@ describe('FlightsService', () => {
       const res = service.filterItinerariesByPrices(itineraries, moxPrice);
       expect(res.length).not.toBe(itineraries.length);
       expect(res.length).toBe(2);
+    });
+  });
+
+  describe('findByAirportId', () => {
+    it('should find an airport by its ID', () => {
+      const res = service.findByAirportId(testCiampinoId, mockPlaces);
+      expect(res.name).toBe(testCiampinoName);
+    });
+
+    it('should return undefined when the ID is not found', () => {
+      const res = service.findByAirportId('xxx', mockPlaces);
+      expect(res).toBeUndefined();
+    });
+  });
+
+  describe('formatDate', () => {
+    it('should format a date object', () => {
+      const testDate = {
+        year: 2023,
+        month: 5,
+        day: 31,
+        hour: 6,
+        minute: 5,
+        second: 0,
+      };
+      const expectedDate = '31/05/2023, 07:05:00';
+      const res = service.formatDate(testDate);
+      expect(res).toEqual(expectedDate);
     });
   });
 });

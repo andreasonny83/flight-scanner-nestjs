@@ -70,14 +70,20 @@ export interface FlightContentLeg {
   originPlaceId: string;
   destinationPlaceId: string;
   departureDateTime: {
+    year: number;
+    month: number;
     day: number;
     hour: number;
     minute: number;
+    second: number;
   };
   arrivalDateTime: {
+    year: number;
+    month: number;
     day: number;
     hour: number;
     minute: number;
+    second: number;
   };
   durationInMinutes: number;
   stopCount: number;
